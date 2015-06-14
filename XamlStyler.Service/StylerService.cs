@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Configuration;
 using System.Diagnostics;
 using System.Globalization;
 using System.IO;
@@ -17,9 +18,8 @@ namespace XamlStyler.Core
 {
     public class StylerService
     {
-        //private readonly Regex _htmlReservedCharRegex = new Regex(@"&#([a-z]|[A-Z]|[0-9])*;");
         private readonly Regex _htmlReservedCharRegex = new Regex(@"&([\d\D][^;]{3,7});");
-        private readonly Regex _htmlReservedCharRestoreRegex = new Regex(@"__amp__([\d\D]{3,7})__scln__");
+        private readonly Regex _htmlReservedCharRestoreRegex = new Regex(@"__amp__([^;]{2,7})__scln__");
         private readonly Stack<ElementProcessStatus> _elementProcessStatusStack;
 
         private IStylerOptions Options { get; set; }
@@ -50,6 +50,16 @@ namespace XamlStyler.Core
             return stylerServiceInstance;
         }
 
+        private string UnescapeDocument(string source)
+        {
+            return _htmlReservedCharRestoreRegex.Replace(source, @"&$1;");
+        }
+
+        private string EscapeDocument(string source)
+        {
+            return _htmlReservedCharRegex.Replace(source, @"__amp__$1__scln__");
+        }
+
         private string Format(string xamlSource)
         {
             string output = String.Empty;
@@ -57,9 +67,10 @@ namespace XamlStyler.Core
 
             try
             {
-                sourceReader = new StringReader(_htmlReservedCharRegex.Replace(xamlSource, @"__amp__$1__scln__"));
+                sourceReader = new StringReader(xamlSource);
                 var settings = new XmlReaderSettings();
                 settings.IgnoreComments = false;
+
                 using (XmlReader xmlReader = XmlReader.Create(sourceReader))
                 {
                     sourceReader = null;
@@ -116,6 +127,10 @@ namespace XamlStyler.Core
                                 ProcessEndElement(xmlReader, ref output);
                                 _elementProcessStatusStack.Pop();
                                 break;
+                            case XmlNodeType.XmlDeclaration:
+                                //ignoring xml declarations for Xamarin support
+                                ProcessXMLRoot(xmlReader, ref output);
+                                break;
                             //case XmlNodeType.CDATA:
                             //    break;
                             default:
@@ -136,7 +151,7 @@ namespace XamlStyler.Core
                 }
             }
 
-            return _htmlReservedCharRestoreRegex.Replace(output, @"&$1;");
+            return output;
         }
 
         private void ProcessCDATA(XmlReader xmlReader, ref string output)
@@ -144,21 +159,6 @@ namespace XamlStyler.Core
             output += string.Format("<![CDATA[{0}]]>", xmlReader.Value);
         }
 
-
-
-        /// <summary>
-        /// Execute styling from file - used by unit tests
-        /// </summary>
-        /// <param name="filePath"></param>
-        /// <returns></returns>
-        public string ManipulateTreeAndFormatFile(string filePath)
-        {
-            // load as XDocument
-            var xDoc = XDocument.Load(filePath, LoadOptions.PreserveWhitespace);
-
-            // first, manipulate the tree; then, write it to a string
-            return Format(ManipulateTree(xDoc).ToString());
-        }
 
         /// <summary>
         /// Execute styling from string input
@@ -168,18 +168,19 @@ namespace XamlStyler.Core
         public string ManipulateTreeAndFormatInput(string xamlSource)
         {
             // parse XDocument
-            var xDoc = XDocument.Parse(xamlSource, LoadOptions.PreserveWhitespace);
+            var xDoc = XDocument.Parse(EscapeDocument(xamlSource), LoadOptions.PreserveWhitespace);
 
             // first, manipulate the tree; then, write it to a string
-            return Format(ManipulateTree(xDoc).ToString());
+            return UnescapeDocument(Format(ManipulateTree(xDoc)));
         }
 
-
-
-        private XDocument ManipulateTree(XDocument xDoc)
+        private string ManipulateTree(XDocument xDoc)
         {
-
             var rootElement = xDoc.Root;
+            string xmlDeclaration = string.Empty;
+
+            if (xDoc.Declaration != null)
+                xmlDeclaration = xDoc.Declaration.ToString();
 
             if (rootElement.HasElements)
             {
@@ -191,7 +192,7 @@ namespace XamlStyler.Core
                 }
             }
 
-            return xDoc;
+            return xmlDeclaration + xDoc;
         }
         private void HandleNode(XNode node)
         {
@@ -216,15 +217,20 @@ namespace XamlStyler.Core
                     // we don't need to reorder.  We should also take into account a user can decide not to allow
                     // reordering
 
-                    if (element.Name.LocalName == "Grid" && element.HasElements && Options.ReorderGridChildren)
+                    if (Options.ReorderGridChildren && element.Name.LocalName == "Grid" && element.HasElements)
                     {
                         // process the grid
                         ProcessGrid(element);
                     }
-                    else if (element.Name.LocalName == "Canvas" && element.HasElements && Options.ReorderCanvasChildren)
+                    else if (Options.ReorderCanvasChildren && element.Name.LocalName == "Canvas" && element.HasElements)
                     {
                         // process the canvas
                         ProcessCanvas(element);
+                    }
+                    else if (Options.ReorderSetters != ReorderSettersBy.None && ElementsWithSetters.Contains(element.Name.LocalName) && element.HasElements)
+                    {
+                        // process the setters
+                        ProcessSetters(element);
                     }
 
 
@@ -233,6 +239,97 @@ namespace XamlStyler.Core
                     break;
             }
 
+        }
+
+        private string[] ElementsWithSetters = new[]
+        {
+            "DataTrigger",
+            "MultiDataTrigger",
+            "MultiTrigger",
+            "Style",
+            "Trigger",
+        };
+
+        /// <summary>
+        /// Order child setters by property/targetname
+        /// 
+        /// Notes on index vars used:
+        /// 
+        ///
+
+        /// </summary>
+        /// <param name="element"></param>
+        private void ProcessSetters(XElement element)
+        {
+            // A string that hopefully always are sorted at the en
+            List<SetterNodeCollection> nodeCollections = new List<SetterNodeCollection>();
+
+            var children = element.Nodes();
+
+            // This is increased each time Define sortable parameters
+            int settersBlockIndex = 1;
+            bool inSettersBlock = false;
+            SetterNodeCollection currentNodeCollection = null;
+                    
+            // Run through children
+            foreach (var child in children)
+            {
+                if (currentNodeCollection == null)
+                {
+                    currentNodeCollection = new SetterNodeCollection();
+                    nodeCollections.Add(currentNodeCollection);
+                }
+
+                if (child.NodeType == XmlNodeType.Element)
+                {
+                    XElement childElement = (XElement)child;
+
+                    var isSetter = childElement.Name.LocalName == "Setter" && childElement.Name.NamespaceName == "http://schemas.microsoft.com/winfx/2006/xaml/presentation";
+
+                    if (isSetter != inSettersBlock)
+                    {
+                        settersBlockIndex++;
+                        inSettersBlock = isSetter;
+                    }
+
+                    if (isSetter)
+                    {
+                        currentNodeCollection.Property = (string)childElement.Attribute("Property");
+                        currentNodeCollection.TargetName = (string)childElement.Attribute("TargetName");
+                    }
+
+                    currentNodeCollection.BlockIndex = settersBlockIndex;
+                }
+
+                currentNodeCollection.Nodes.Add(child);
+
+                if (child.NodeType == XmlNodeType.Element)
+                    currentNodeCollection = null;
+            }
+
+            if (currentNodeCollection != null)
+                currentNodeCollection.BlockIndex = settersBlockIndex + 1;
+
+            // sort that list.
+            switch (Options.ReorderSetters)
+            {
+                case ReorderSettersBy.None:
+                    break;
+                case ReorderSettersBy.Property:
+                    nodeCollections = nodeCollections.OrderBy(x => x.BlockIndex).ThenBy(x=>x.Property).ToList();
+                    break;
+                case ReorderSettersBy.TargetName:
+                    nodeCollections = nodeCollections.OrderBy(x => x.BlockIndex).ThenBy(x => x.TargetName).ToList();
+                    break;
+                case ReorderSettersBy.TargetNameThenProperty:
+                    nodeCollections = nodeCollections.OrderBy(x => x.BlockIndex).ThenBy(x => x.TargetName).ThenBy(x => x.Property).ToList();
+                    break;
+                default:
+                    throw new ArgumentOutOfRangeException();
+            }
+
+            // replace the element's nodes
+            element.ReplaceNodes(nodeCollections.SelectMany(nc => nc.Nodes));
         }
 
         private void ProcessCanvas(XElement element)
@@ -320,6 +417,7 @@ namespace XamlStyler.Core
         private void ProcessGrid(XElement element)
         {
             List<GridNodeContainer> lstNodeContainers = new List<GridNodeContainer>();
+            int commentIndex = int.MaxValue;
 
             var children = element.Nodes();
 
@@ -333,21 +431,31 @@ namespace XamlStyler.Core
                     case XmlNodeType.Element:
 
                         // it's an element.  Search for Grid.Row attribute / Grid.Column attribute
-                        var rowAttr = (child as XElement).Attributes("Grid.Row");
-                        var columnAttr = (child as XElement).Attributes("Grid.Column");
+                        var childElement = (XElement)child;
 
-                        int row = -1;
-                        int column = -1;
+                        var rowAttr = childElement.Attributes("Grid.Row");
+                        var columnAttr = childElement.Attributes("Grid.Column");
 
-                        if (rowAttr != null && rowAttr.Any() && !int.TryParse(rowAttr.First().Value, out row))
+                        int row;
+                        int column;
+
+                        if (rowAttr == null || !rowAttr.Any() || !int.TryParse(rowAttr.First().Value, out row))
                         {
-                            row = -1;
+                            row = childElement.Name.LocalName.Contains(".") ? -2 : -1;
                         }
 
-                        if (columnAttr != null && columnAttr.Any() && !int.TryParse(columnAttr.First().Value, out column))
+                        if (columnAttr == null || !columnAttr.Any() || !int.TryParse(columnAttr.First().Value, out column))
                         {
                             column = -1;
                         }
+
+                        while (commentIndex < lstNodeContainers.Count)
+                        {
+                            lstNodeContainers[commentIndex].Row = row;
+
+                            commentIndex++;
+                        }
+                        commentIndex = int.MaxValue;
 
                         // no attribute?  0,0
                         lstNodeContainers.Add(new GridNodeContainer(child, row, column));
@@ -365,7 +473,12 @@ namespace XamlStyler.Core
                         }
                         else
                         {
-                            lstNodeContainers.Add(new GridNodeContainer(child, 0, 0));
+                            lstNodeContainers.Add(new GridNodeContainer(child, int.MinValue, int.MinValue));
+                        }
+
+                        if (child.NodeType == XmlNodeType.Comment && commentIndex == int.MaxValue)
+                        {
+                            commentIndex = lstNodeContainers.Count - 1;
                         }
 
                         break;
@@ -401,30 +514,49 @@ namespace XamlStyler.Core
             return NoNewLineElementsList.Contains<string>(elementName);
         }
 
+        private void ProcessXMLRoot(XmlReader xmlReader, ref string output)
+        {
+            output += "<?xml " + xmlReader.Value.Trim() + " ?>";
+        }
+
         private void ProcessComment(XmlReader xmlReader, ref string output)
         {
             string currentIndentString = GetIndentString(xmlReader.Depth);
-            string content = xmlReader.Value.Trim();
+            string content = xmlReader.Value;
 
             if (!output.EndsWith("\n"))
             {
                 output += Environment.NewLine;
             }
 
-            if (content.Contains("\n"))
+            if (content.Contains("<") && content.Contains(">"))
+            {
+                output += currentIndentString + "<!--";
+                if (content.Contains("\n"))
+                {
+                    output += string.Join(Environment.NewLine, content.GetLines().Select(x=>x.TrimEnd(' ')));
+                    if (content.TrimEnd(' ').EndsWith("\n"))
+                    {
+                        output += currentIndentString;
+                    }
+                }
+                else
+                    output += content;
+
+                output += "-->";
+            }
+            else if (content.Contains("\n"))
             {
                 output += currentIndentString + "<!--";
 
                 string contentIndentString = GetIndentString(xmlReader.Depth + 1);
-                string[] lines = content.Split('\n');
-
-                output = lines.Aggregate(output, (current, line) => current + (Environment.NewLine + contentIndentString + line.Trim()));
+                output = content.Trim().GetLines().Aggregate(output, (current, line) => current + (Environment.NewLine + contentIndentString + line.Trim()));
 
                 output += Environment.NewLine + currentIndentString + "-->";
             }
             else
             {
-                output += currentIndentString + "<!--  " + content + "  -->";
+                output += currentIndentString + "<!--  " + content.Trim() + "  -->";
             }
         }
 
@@ -469,13 +601,32 @@ namespace XamlStyler.Core
                     list.Add(new AttributeInfo(attributeName, attributeValue, orderRule));
                 }
 
-                list.Sort();
+                if (Options.OrderAttributesByName)
+                    list.Sort();
 
                 currentIndentString = GetIndentString(xmlReader.Depth);
 
+                var noLineBreakInAttributes = (list.Count <= Options.AttributesTolerance) || IsNoLineBreakElement(elementName);
+                // Root element?
+                if (_elementProcessStatusStack.Count == 2) 
+                {
+                    switch (Options.RootElementLineBreakRule)
+                    {
+                        case LineBreakRule.Default:
+                            break;
+                        case LineBreakRule.Always:
+                            noLineBreakInAttributes = false;
+                            break;
+                        case LineBreakRule.Never:
+                            noLineBreakInAttributes = true;
+                            break;
+                        default:
+                            throw new ArgumentOutOfRangeException();
+                    }
+                }
+
                 // No need to break attributes
-                if ((list.Count <= Options.AttributesTolerance)
-                    || IsNoLineBreakElement(elementName))
+                if (noLineBreakInAttributes)
                 {
                     output = list.Select(attrInfo => attrInfo.ToSingleLineString()).Aggregate(output, (current, pendingAppend) => current + String.Format(" {0}", pendingAppend));
 
@@ -490,6 +641,7 @@ namespace XamlStyler.Core
                     var currentLineBuffer = new StringBuilder();
                     int attributeCountInCurrentLineBuffer = 0;
 
+                    AttributeInfo lastAttributeInfo = null;
                     foreach (AttributeInfo attrInfo in list)
                     {
                         // Attributes with markup extension, always put on new line
@@ -521,7 +673,11 @@ namespace XamlStyler.Core
                                 (Options.MaxAttributesPerLine > 0 &&
                                  attributeCountInCurrentLineBuffer + 1 > Options.MaxAttributesPerLine);
 
-                            if (isAttributeCharLengthExceeded || isAttributeCountExceeded)
+                            bool isAttributeRuleGroupChanged = Options.PutAttributeOrderRuleGroupsOnSeparateLines
+                                                               && lastAttributeInfo != null
+                                                               && lastAttributeInfo.OrderRule.AttributeTokenType != attrInfo.OrderRule.AttributeTokenType;
+
+                            if (isAttributeCharLengthExceeded || isAttributeCountExceeded || isAttributeRuleGroupChanged)
                             {
                                 attributeLines.Add(currentLineBuffer.ToString());
                                 currentLineBuffer.Length = 0;
@@ -531,6 +687,8 @@ namespace XamlStyler.Core
                             currentLineBuffer.AppendFormat("{0} ", pendingAppend);
                             attributeCountInCurrentLineBuffer++;
                         }
+                        
+                        lastAttributeInfo = attrInfo;
                     }
 
                     if (currentLineBuffer.Length > 0)

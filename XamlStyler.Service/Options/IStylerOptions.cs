@@ -20,6 +20,11 @@ namespace XamlStyler.Core.Options
         #endregion Indentation
 
         #region Attribute Ordering Rule Groups
+        [Category("Attribute Ordering Rule Groups")]
+        [DisplayName("#10 Order attributes by name")]
+        [Description("Enable sorting of attributes by name")]
+        [DefaultValue("True")]
+        bool OrderAttributesByName { get; set; }
 
         [Category("Attribute Ordering Rule Groups")]
         [DisplayName("#7 Alignment layout group")]
@@ -156,6 +161,14 @@ namespace XamlStyler.Core.Options
         string NoNewLineElements { get; set; }
 
         [Category("New Line")]
+        [DisplayName("Put attributes order rule groups on separate lines")]
+        [Description(
+            "Put attributes belonging to different order rules on different lines (keep identical order rules on same line if possible)"
+            )]
+        [DefaultValue(false)]
+        bool PutAttributeOrderRuleGroupsOnSeparateLines { get; set; }
+
+        [Category("New Line")]
         [DisplayName("Put ending bracket on new line")]
         [Description("Defines whether to put \">\" or \"/>\" on a new line.\r\nDefault Value: false")]
         [DefaultValue(false)]
@@ -169,6 +182,14 @@ namespace XamlStyler.Core.Options
         [DefaultValue(true)]
         bool RemoveEndingTagOfEmptyElement { get; set; }
 
+        [Category("New Line")]
+        [DisplayName("Root element line breaks between attributes")]
+        [Description(
+            "Defines if attributes of the document root element are broken into separate lines or not.\r\nDefault = use same rules as other elements"
+            )]
+        [DefaultValue(LineBreakRule.Default)]
+        LineBreakRule RootElementLineBreakRule { get; set; }
+
         #endregion New Line
 
         #region Misc
@@ -181,23 +202,25 @@ namespace XamlStyler.Core.Options
 
         #endregion Misc
 
+        #region Content Order
 
-        #region Panel Content Order
-
-        [Category("Panel Content Order")]
+        [Category("Content Order")]
         [DisplayName("Reorder Grid panel children by row/column")]
         [Description("Defines whether to reorder the children of a Grid by row/column.  When this is true, children will be reordered in an ascending fashion by looking at their attached Grid properties: first by Grid.Row, then by Grid.Column.")]
         [DefaultValue(true)]
         bool ReorderGridChildren { get; set; }
 
-        [Category("Panel Content Order")]
+        [Category("Content Order")]
         [DisplayName("Reorder Canvas panel children by left/top/right/bottom")]
         [Description("Defines whether to reorder the children of a Canvas by left/top/right/bottom.  When this is true, children will be reordered in an ascending fashion by looking at their attached Canvas properties: first by Canvas.Left, then by Canvas.Top, then by Canvas.Right, then by Canvas.Bottom.")]
         [DefaultValue(true)]
         bool ReorderCanvasChildren { get; set; }
 
-
-
+        [Category("Content Order")]
+        [DisplayName("Reorder Setters by")]
+        [Description("Defines whether to reorder 'Setter' elements in style/trigger elements. When this is set, children will be reordered in an ascending fashion by looking at their Property and/or TargetName properties")]
+        [DefaultValue(ReorderSettersBy.None)]
+        ReorderSettersBy ReorderSetters { get; set; }
 
         #endregion
     }

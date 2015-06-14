@@ -1,4 +1,5 @@
-﻿using System.ComponentModel;
+﻿using System;
+using System.ComponentModel;
 
 namespace XamlStyler.Core.Options
 {
@@ -15,15 +16,17 @@ namespace XamlStyler.Core.Options
             MaxAttributeCharatersPerLine = 0;
             NoNewLineElements =
                 "RadialGradientBrush, GradientStop, LinearGradientBrush, ScaleTransfom, SkewTransform, RotateTransform, TranslateTransform, Trigger, Condition, Setter";
+            PutAttributeOrderRuleGroupsOnSeparateLines = false;
             PutEndingBracketOnNewLine = false;
             RemoveEndingTagOfEmptyElement = true;
+            RootElementLineBreakRule = LineBreakRule.Default;
             KeepFirstAttributeOnSameLine = true;
 
             //Markup Extension
             FormatMarkupExtension = true;
 
             //Attribute Ordering Rule Related Default Options
-
+            OrderAttributesByName = true;
             AttributeOrderClass = "x:Class";
 
             AttributeOrderWpfNamespace = "xmlns, xmlns:x";
@@ -47,9 +50,8 @@ namespace XamlStyler.Core.Options
 
             ReorderGridChildren = true;
             ReorderCanvasChildren = true;
+            ReorderSetters = ReorderSettersBy.None;
         }
-
-        #region Implementation of IStylerOptions
 
         //Indentation
 
@@ -64,7 +66,7 @@ namespace XamlStyler.Core.Options
         //Attribute Ordering Rule Groups
 
         [Category("Attribute Ordering Rule Groups")]
-        [DisplayName("#7 Alignment layout group")]
+        [DisplayName("#07 Alignment layout group")]
         [Description(
             "Defines ordering rule of alignment layout attributes.\r\nUse ',' to seperate more than one attribute.\r\nAttributes listed in earlier group takes precedence than later groups.\r\nAttributes listed earlier in same group takes precedence than the ones listed later."
             )]
@@ -74,7 +76,13 @@ namespace XamlStyler.Core.Options
         public string AttributeOrderAlignmentLayout { get; set; }
 
         [Category("Attribute Ordering Rule Groups")]
-        [DisplayName("#5 Attached layout group")]
+        [DisplayName("#10 Order attributes by name")]
+        [Description("Enable sorting of attributes by name")]
+        [DefaultValue("True")]
+        public bool OrderAttributesByName { get; set; }
+
+        [Category("Attribute Ordering Rule Groups")]
+        [DisplayName("#05 Attached layout group")]
         [Description(
             "Defines ordering rule of attached layout attributes.\r\nUse ',' to seperate more than one attribute.\r\nAttributes listed in earlier group takes precedence than later groups.\r\nAttributes listed earlier in same group takes precedence than the ones listed later."
             )]
@@ -84,7 +92,7 @@ namespace XamlStyler.Core.Options
         public string AttributeOrderAttachedLayout { get; set; }
 
         [Category("Attribute Ordering Rule Groups")]
-        [DisplayName("#9 Blend related group")]
+        [DisplayName("#09 Blend related group")]
         [Description(
             "Defines ordering rule of blend related attributes.\r\nUse ',' to seperate more than one attribute.\r\nAttributes listed in earlier group takes precedence than later groups.\r\nAttributes listed earlier in same group takes precedence than the ones listed later."
             )]
@@ -92,7 +100,7 @@ namespace XamlStyler.Core.Options
         public string AttributeOrderBlendRelated { get; set; }
 
         [Category("Attribute Ordering Rule Groups")]
-        [DisplayName("#1 Class definition group")]
+        [DisplayName("#01 Class definition group")]
         [Description(
             "Defines ordering rule of class definition attributes.\r\nUse ',' to seperate more than one attribute.\r\nAttributes listed in earlier group takes precedence than later groups.\r\nAttributes listed earlier in same group takes precedence than the ones listed later."
             )]
@@ -100,7 +108,7 @@ namespace XamlStyler.Core.Options
         public string AttributeOrderClass { get; set; }
 
         [Category("Attribute Ordering Rule Groups")]
-        [DisplayName("#6 Core layout group")]
+        [DisplayName("#06 Core layout group")]
         [Description(
             "Defines ordering rule of core layout attributes.\r\nUse ',' to seperate more than one attribute.\r\nAttributes listed in earlier group takes precedence than later groups.\r\nAttributes listed earlier in same group takes precedence than the ones listed later."
             )]
@@ -108,7 +116,7 @@ namespace XamlStyler.Core.Options
         public string AttributeOrderCoreLayout { get; set; }
 
         [Category("Attribute Ordering Rule Groups")]
-        [DisplayName("#3 Element key group")]
+        [DisplayName("#03 Element key group")]
         [Description(
             "Defines ordering rule of element key.\r\nUse ',' to seperate more than one attribute.\r\nAttributes listed in earlier group takes precedence than later groups.\r\nAttributes listed earlier in same group takes precedence than the ones listed later."
             )]
@@ -116,7 +124,7 @@ namespace XamlStyler.Core.Options
         public string AttributeOrderKey { get; set; }
 
         [Category("Attribute Ordering Rule Groups")]
-        [DisplayName("#4 Element name group")]
+        [DisplayName("#04 Element name group")]
         [Description(
             "Defines ordering rule of element name.\r\nUse ',' to seperate more than one attribute.\r\nAttributes listed in earlier group takes precedence than later groups.\r\nAttributes listed earlier in same group takes precedence than the ones listed later."
             )]
@@ -124,7 +132,7 @@ namespace XamlStyler.Core.Options
         public string AttributeOrderName { get; set; }
 
         [Category("Attribute Ordering Rule Groups")]
-        [DisplayName("#8 Miscellaneous attributes group")]
+        [DisplayName("#08 Miscellaneous attributes group")]
         [Description(
             "Defines ordering rule of miscellaneous attributes.\r\nUse ',' to seperate more than one attribute.\r\nAttributes listed in earlier group takes precedence than later groups.\r\nAttributes listed earlier in same group takes precedence than the ones listed later.\r\n**Attributes not listed in any ordring rule groups, are implicitly appended to this group in alphabetic order."
             )]
@@ -132,7 +140,7 @@ namespace XamlStyler.Core.Options
         public string AttributeOrderOthers { get; set; }
 
         [Category("Attribute Ordering Rule Groups")]
-        [DisplayName("#2 WPF Namespaces group")]
+        [DisplayName("#02 WPF Namespaces group")]
         [Description(
             "Defines ordering rule of wpf namespaces.\r\nUse ',' to seperate more than one attribute.\r\nAttributes listed in earlier group takes precedence than later groups.\r\nAttributes listed earlier in same group takes precedence than the ones listed later."
             )]
@@ -194,6 +202,14 @@ namespace XamlStyler.Core.Options
         public string NoNewLineElements { get; set; }
 
         [Category("New Line")]
+        [DisplayName("Put attributes order rule groups on separate lines")]
+        [Description(
+            "Put attributes belonging to different order rules on different lines (keep identical order rules on same line if possible)"
+            )]
+        [DefaultValue(false)]
+        public bool PutAttributeOrderRuleGroupsOnSeparateLines { get; set; }
+
+        [Category("New Line")]
         [DisplayName("Put ending bracket on new line")]
         [Description("Defines whether to put \">\" or \"/>\" on a new line.\r\nDefault Value: false")]
         [DefaultValue(false)]
@@ -207,6 +223,13 @@ namespace XamlStyler.Core.Options
         [DefaultValue(true)]
         public bool RemoveEndingTagOfEmptyElement { get; set; }
 
+        [Category("New Line")]
+        [DisplayName("Root element line breaks between attributes")]
+        [Description(
+            "Defines if attributes of the document root element are broken into separate lines or not.\r\nDefault = use same rules as other elements"
+            )]
+        [DefaultValue(LineBreakRule.Default)]
+        public LineBreakRule RootElementLineBreakRule { get; set; }
 
         // Misc
         [Category("Misc")]
@@ -215,23 +238,24 @@ namespace XamlStyler.Core.Options
         [DefaultValue(true)]
         public bool BeautifyOnSave { get; set; }
 
-   
+        // Content Order
 
-        // Panel Content Order
-
-        [Category("Panel Content Order")]
+        [Category("Content Order")]
         [DisplayName("Reorder Grid panel children by row/column")]
         [Description("Defines whether to reorder the children of a Grid by row/column.  When this is true, children will be reordered in an ascending fashion by looking at their attached Grid properties: first by Grid.Row, then by Grid.Column.")]
         [DefaultValue(true)]
         public bool ReorderGridChildren { get; set; }
 
-        [Category("Panel Content Order")]
+        [Category("Content Order")]
         [DisplayName("Reorder Canvas panel children by left/top/right/bottom")]
         [Description("Defines whether to reorder the children of a Canvas by left/top/right/bottom.  When this is true, children will be reordered in an ascending fashion by looking at their attached Canvas properties: first by Canvas.Left, then by Canvas.Top, then by Canvas.Right, then by Canvas.Bottom.")]
         [DefaultValue(true)]
         public bool ReorderCanvasChildren { get; set; }
 
-
-        #endregion Implementation of IStylerOptions
+        [Category("Content Order")]
+        [DisplayName("Reorder Setters by")]
+        [Description("Defines whether to reorder 'Setter' elements in style/trigger elements. When this is set, children will be reordered in an ascending fashion by looking at their Property and/or TargetName properties")]
+        [DefaultValue(ReorderSettersBy.None)]
+        public ReorderSettersBy ReorderSetters { get; set; }
     }
 }
