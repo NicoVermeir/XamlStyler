@@ -20,7 +20,10 @@ namespace XamlStyler.Core.Model
                 .Populate(options.AttributeOrderAttachedLayout, AttributeTokenTypeEnum.ATTACHED_LAYOUT)
                 .Populate(options.AttributeOrderCoreLayout, AttributeTokenTypeEnum.CORE_LAYOUT)
                 .Populate(options.AttributeOrderAlignmentLayout, AttributeTokenTypeEnum.ALIGNMENT_LAYOUT)
+                .Populate(options.AttributeOrderPrimaryProperties, AttributeTokenTypeEnum.PRIMARY_PROPERTIES)
+                .Populate(options.AttributeOrderPrimaryEvents, AttributeTokenTypeEnum.PRIMARY_EVENTS)
                 .Populate(options.AttributeOrderOthers, AttributeTokenTypeEnum.OTHER)
+                .Populate(options.AttributeOrderClosing, AttributeTokenTypeEnum.CLOSING)
                 .Populate(options.AttributeOrderBlendRelated, AttributeTokenTypeEnum.BLEND_RELATED);
         }
 

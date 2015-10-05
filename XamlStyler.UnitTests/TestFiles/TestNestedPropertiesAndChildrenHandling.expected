@@ -101,33 +101,33 @@
       <Button x:Name="backButton"
               Margin="39,59,39,0"
               VerticalAlignment="Top"
-              AutomationProperties.AutomationId="BackButton"
-              AutomationProperties.ItemType="Navigation Button"
-              AutomationProperties.Name="Back"
+              Style="{StaticResource NavigationBackButtonNormalStyle}"
               Command="{Binding NavigationHelper.GoBackCommand,
                                 ElementName=pageRoot}"
-              Style="{StaticResource NavigationBackButtonNormalStyle}" />
+              AutomationProperties.AutomationId="BackButton"
+              AutomationProperties.ItemType="Navigation Button"
+              AutomationProperties.Name="Back" />
       <TextBlock x:Name="pageTitle"
                  Grid.Column="1"
                  Margin="0,0,0,40"
                  VerticalAlignment="Bottom"
-                 IsHitTestVisible="false"
                  Style="{StaticResource HeaderTextBlockStyle}"
                  Text="{Binding Title}"
+                 IsHitTestVisible="false"
                  TextWrapping="NoWrap" />
     </Grid>
     <ScrollViewer x:Name="itemDetail"
                   Grid.RowSpan="2"
                   Grid.Column="1"
-                  AutomationProperties.AutomationId="ItemDetailScrollViewer"
+                  Padding="60,0,66,0"
                   DataContext="{Binding SelectedItem,
                                         ElementName=itemListView}"
                   HorizontalScrollBarVisibility="Disabled"
-                  Padding="60,0,66,0"
                   ScrollViewer.HorizontalScrollMode="Disabled"
                   ScrollViewer.VerticalScrollMode="Enabled"
                   ScrollViewer.ZoomMode="Disabled"
-                  VerticalScrollBarVisibility="Auto">
+                  VerticalScrollBarVisibility="Auto"
+                  AutomationProperties.AutomationId="ItemDetailScrollViewer">
 
       <Grid x:Name="itemDetailGrid" Margin="0,60,0,50">
         <Grid.RowDefinitions>
@@ -144,9 +144,9 @@
                Width="180"
                Height="180"
                Margin="0,0,20,0"
-               AutomationProperties.Name="{Binding Title}"
                Source="{Binding ImagePath}"
-               Stretch="UniformToFill" />
+               Stretch="UniformToFill"
+               AutomationProperties.Name="{Binding Title}" />
         <StackPanel x:Name="itemDetailTitlePanel"
                     Grid.Row="1"
                     Grid.Column="1">
@@ -170,13 +170,13 @@
     <ListView x:Name="itemListView"
               Grid.Row="1"
               Margin="-10,-10,0,0"
-              AutomationProperties.AutomationId="ItemsListView"
-              AutomationProperties.Name="Items"
+              Padding="120,0,0,60"
               IsSwipeEnabled="False"
               ItemsSource="{Binding Source={StaticResource itemsViewSource}}"
-              Padding="120,0,0,60"
               SelectionChanged="ItemListView_SelectionChanged"
-              TabIndex="1">
+              TabIndex="1"
+              AutomationProperties.AutomationId="ItemsListView"
+              AutomationProperties.Name="Items">
       <ListView.ItemTemplate>
         <DataTemplate>
           <Grid Margin="6">
@@ -187,9 +187,9 @@
             <Border Width="60"
                     Height="60"
                     Background="{ThemeResource ListViewItemPlaceholderBackgroundThemeBrush}">
-              <Image AutomationProperties.Name="{Binding Title}"
-                     Source="{Binding ImagePath}"
-                     Stretch="UniformToFill" />
+              <Image Source="{Binding ImagePath}"
+                     Stretch="UniformToFill"
+                     AutomationProperties.Name="{Binding Title}" />
             </Border>
             <StackPanel Grid.Column="1" Margin="10,0,0,0">
               <TextBlock MaxHeight="40"

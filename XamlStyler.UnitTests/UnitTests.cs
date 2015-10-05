@@ -57,13 +57,17 @@ namespace XamlStyler.UnitTests
                 AttributeOrderKey = "Key, x:Key, Uid, x:Uid",
                 AttributeOrderName = "Name, x:Name, Title",
                 AttributeOrderAttachedLayout =
-                    "Grid.Column, Grid.ColumnSpan, Grid.Row, Grid.RowSpan, Canvas.Right, Canvas.Bottom, Canvas.Left, Canvas.Top",
+                    "Grid.Column, Grid.ColumnSpan, Grid.Row, Grid.RowSpan, Canvas.Right, Canvas.Bottom, Canvas.Left, Canvas.Top, Canvas.ZIndex",
                 AttributeOrderCoreLayout =
-                    "MinWidth, MinHeight, Width, Height, MaxWidth, MaxHeight, Margin",
+                    "MinWidth, MinHeight, Width, Height, MaxWidth, MaxHeight, Margin, Padding",
                 AttributeOrderAlignmentLayout =
                     "Panel.ZIndex, HorizontalAlignment, VerticalAlignment, HorizontalContentAlignment, VerticalContentAlignment",
+                AttributeOrderPrimaryProperties = "Style, Header, Content, Text, Fill, Background, Foreground, BorderBrush, BorderThickness",
+                AttributeOrderPrimaryEvents = "Click, Tapped, PointerPressed, PointerReleased, Loaded, Unloaded",
                 AttributeOrderOthers =
                     "Offset, Color, TargetName, Property, Value, StartPoint, EndPoint, PageSource, PageIndex",
+                AttributeOrderClosing =
+                    "ToolTipService.Tooltip, ToolTipService.Placement, ToolTipService.PlacementTarget, AutomationProperties.AcceleratorKey, AutomationProperties.AccessibilityView, AutomationProperties.AccessKey, AutomationProperties.AutomationId, AutomationProperties.HelpText, AutomationProperties.IsRequiredForForm, AutomationProperties.ItemStatus, AutomationProperties.ItemType, AutomationProperties.LabeledBy, AutomationProperties.LiveSetting, AutomationProperties.Name",
                 AttributeOrderBlendRelated =
                     "mc:Ignorable, d:IsDataSource, d:LayoutOverrides, d:IsStaticText"
             };

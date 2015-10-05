@@ -5,8 +5,8 @@
         Width="525"
         Height="350">
   <Grid>
-    <TextBlock FontFamily="Arial"
-               FontSize="18"
-               Text="{x:Bind Vm.test, Mode=TwoWay, Source={StaticResource Locator}, Converter={StaticResource Converter}}" />
+    <TextBlock Text="{x:Bind Vm.test, Mode=TwoWay, Source={StaticResource Locator}, Converter={StaticResource Converter}}"
+               FontFamily="Arial"
+               FontSize="18" />
   </Grid>
 </Window>

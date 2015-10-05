@@ -37,13 +37,17 @@ namespace XamlStyler.Core.Options
             AttributeOrderName = "Name, x:Name, Title";
 
             AttributeOrderAttachedLayout =
-                "Grid.Row, Grid.RowSpan, Grid.Column, Grid.ColumnSpan, Canvas.Left, Canvas.Top, Canvas.Right, Canvas.Bottom";
-            AttributeOrderCoreLayout = "Width, Height, MinWidth, MinHeight, MaxWidth, MaxHeight, Margin";
+                "Grid.Row, Grid.RowSpan, Grid.Column, Grid.ColumnSpan, Canvas.Left, Canvas.Top, Canvas.Right, Canvas.Bottom, Canvas.ZIndex";
+            AttributeOrderCoreLayout = "Width, Height, MinWidth, MinHeight, MaxWidth, MaxHeight, Margin, Padding";
             AttributeOrderAlignmentLayout =
                 "HorizontalAlignment, VerticalAlignment, HorizontalContentAlignment, VerticalContentAlignment, Panel.ZIndex";
 
+            AttributeOrderPrimaryProperties = "Style, Header, Content, Text, Fill, Background, Foreground, BorderBrush, BorderThickness";
+            AttributeOrderPrimaryEvents = "Click, Tapped, PointerPressed, PointerReleased, Loaded, Unloaded";
             AttributeOrderOthers =
                 "PageSource, PageIndex, Offset, Color, TargetName, Property, Value, StartPoint, EndPoint";
+            AttributeOrderClosing =
+                "ToolTipService.Tooltip, ToolTipService.Placement, ToolTipService.PlacementTarget, AutomationProperties.AcceleratorKey, AutomationProperties.AccessibilityView, AutomationProperties.AccessKey, AutomationProperties.AutomationId, AutomationProperties.HelpText, AutomationProperties.IsRequiredForForm, AutomationProperties.ItemStatus, AutomationProperties.ItemType, AutomationProperties.LabeledBy, AutomationProperties.LiveSetting, AutomationProperties.Name";
 
             AttributeOrderBlendRelated = "mc:Ignorable, d:IsDataSource, d:LayoutOverrides, d:IsStaticText";
 
@@ -78,7 +82,7 @@ namespace XamlStyler.Core.Options
         public string AttributeOrderAlignmentLayout { get; set; }
 
         [Category("Attribute Ordering Rule Groups")]
-        [DisplayName("#10 Order attributes by name")]
+        [DisplayName("#13 Order attributes by name")]
         [Description("Enable sorting of attributes by name")]
         [DefaultValue("True")]
         public bool OrderAttributesByName { get; set; }
@@ -89,12 +93,12 @@ namespace XamlStyler.Core.Options
             "Defines ordering rule of attached layout attributes.\r\nUse ',' to seperate more than one attribute.\r\nAttributes listed in earlier group takes precedence than later groups.\r\nAttributes listed earlier in same group takes precedence than the ones listed later."
             )]
         [DefaultValue(
-            "Grid.Row, Grid.RowSpan, Grid.Column, Grid.ColumnSpan, Canvas.Left, Canvas.Top, Canvas.Right, Canvas.Bottom"
+            "Grid.Row, Grid.RowSpan, Grid.Column, Grid.ColumnSpan, Canvas.Left, Canvas.Top, Canvas.Right, Canvas.Bottom, Canvas.ZIndex"
             )]
         public string AttributeOrderAttachedLayout { get; set; }
 
         [Category("Attribute Ordering Rule Groups")]
-        [DisplayName("#09 Blend related group")]
+        [DisplayName("#12 Blend related group")]
         [Description(
             "Defines ordering rule of blend related attributes.\r\nUse ',' to seperate more than one attribute.\r\nAttributes listed in earlier group takes precedence than later groups.\r\nAttributes listed earlier in same group takes precedence than the ones listed later."
             )]
@@ -110,11 +114,19 @@ namespace XamlStyler.Core.Options
         public string AttributeOrderClass { get; set; }
 
         [Category("Attribute Ordering Rule Groups")]
+        [DisplayName("#11 Closing attributes group")]
+        [Description(
+            "Defines ordering rule for attributes that should be listed last.\r\nUse ',' to seperate more than one attribute.\r\nAttributes listed in earlier group takes precedence than later groups.\r\nAttributes listed earlier in same group takes precedence than the ones listed later."
+            )]
+        [DefaultValue("ToolTipService.Tooltip, ToolTipService.Placement, ToolTipService.PlacementTarget, AutomationProperties.AcceleratorKey, AutomationProperties.AccessibilityView, AutomationProperties.AccessKey, AutomationProperties.AutomationId, AutomationProperties.HelpText, AutomationProperties.IsRequiredForForm, AutomationProperties.ItemStatus, AutomationProperties.ItemType, AutomationProperties.LabeledBy, AutomationProperties.LiveSetting, AutomationProperties.Name")]
+        public string AttributeOrderClosing { get; set; }
+
+        [Category("Attribute Ordering Rule Groups")]
         [DisplayName("#06 Core layout group")]
         [Description(
             "Defines ordering rule of core layout attributes.\r\nUse ',' to seperate more than one attribute.\r\nAttributes listed in earlier group takes precedence than later groups.\r\nAttributes listed earlier in same group takes precedence than the ones listed later."
             )]
-        [DefaultValue("Width, Height, MinWidth, MinHeight, MaxWidth, MaxHeight, Margin")]
+        [DefaultValue("Width, Height, MinWidth, MinHeight, MaxWidth, MaxHeight, Margin, Padding")]
         public string AttributeOrderCoreLayout { get; set; }
 
         [Category("Attribute Ordering Rule Groups")]
@@ -134,7 +146,23 @@ namespace XamlStyler.Core.Options
         public string AttributeOrderName { get; set; }
 
         [Category("Attribute Ordering Rule Groups")]
-        [DisplayName("#08 Miscellaneous attributes group")]
+        [DisplayName("#08 Primary properties group")]
+        [Description(
+            "Defines ordering rule for properties that should be listed first.\r\nUse ',' to seperate more than one attribute.\r\nAttributes listed in earlier group takes precedence than later groups.\r\nAttributes listed earlier in same group takes precedence than the ones listed later."
+            )]
+        [DefaultValue("Style, Header, Content, Text, Fill, Background, Foreground, BorderBrush, BorderThickness")]
+        public string AttributeOrderPrimaryProperties { get; set; }
+
+        [Category("Attribute Ordering Rule Groups")]
+        [DisplayName("#09 Primary events group")]
+        [Description(
+            "Defines ordering rule for events that should be listed first.\r\nUse ',' to seperate more than one attribute.\r\nAttributes listed in earlier group takes precedence than later groups.\r\nAttributes listed earlier in same group takes precedence than the ones listed later."
+            )]
+        [DefaultValue("Click, Tapped, PointerPressed, PointerReleased, Loaded, Unloaded")]
+        public string AttributeOrderPrimaryEvents { get; set; }
+
+        [Category("Attribute Ordering Rule Groups")]
+        [DisplayName("#10 Miscellaneous attributes group")]
         [Description(
             "Defines ordering rule of miscellaneous attributes.\r\nUse ',' to seperate more than one attribute.\r\nAttributes listed in earlier group takes precedence than later groups.\r\nAttributes listed earlier in same group takes precedence than the ones listed later.\r\n**Attributes not listed in any ordring rule groups, are implicitly appended to this group in alphabetic order."
             )]
