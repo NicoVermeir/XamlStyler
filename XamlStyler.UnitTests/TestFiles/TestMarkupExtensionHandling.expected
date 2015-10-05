@@ -10,12 +10,12 @@
     <!--  Literal style  -->
     <TextBlock HorizontalAlignment="Center"
                VerticalAlignment="Center"
-               FontSize="20"
-               Foreground="Red"
                Text="{Binding {}Title,
                               RelativeSource={RelativeSource FindAncestor,
                                                              AncestorType={x:Type Page}},
-                              StringFormat={}{0}Now{{0}} - {0}}" />
+                              StringFormat={}{0}Now{{0}} - {0}}"
+               Foreground="Red"
+               FontSize="20" />
 
     <TextBlock HorizontalAlignment="Right"
                VerticalAlignment="Top"
@@ -45,19 +45,19 @@
 
     <TextBlock Margin="40" Text="{Binding Path=Text, ElementName=m_source, StringFormat='a,b,{0}'}" />
 
-    <TextBlock FontSize="18"
-               FontWeight="Bold"
-               Text="{Binding SelectedReceiver,
-                              StringFormat='{}{0}\'s email'}" />
+    <TextBlock Text="{Binding SelectedReceiver,
+                              StringFormat='{}{0}\'s email'}"
+               FontSize="18"
+               FontWeight="Bold" />
 
     <!--  Escape Sequence  -->
     <TextBlock x:Name="m_text"
                Margin="20, 5"
                HorizontalAlignment="Center"
                VerticalAlignment="Bottom"
-               FontSize="20"
+               Text="{}{asdfg}   "
                Foreground="Green"
-               Text="{}{asdfg}   " />
+               FontSize="20" />
 
     <!--  Xml Namespace  -->
     <TextBlock Width="100" Text="{Binding Path=Element[{http://planetsNS}DiameterKM].Value}" />

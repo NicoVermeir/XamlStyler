@@ -16,10 +16,10 @@
     <DataPager PageSource="{Binding .}" PageIndex="3" />
 
     <Button Margin="0,0,0,10"
+            Padding="8,8,0,0"
             Content="&#xE112;"
             FontFamily="Segoe UI Symbol"
-            FontSize="18.667"
-            Padding="8,8,0,0" />
+            FontSize="18.667" />
 
     <DockPanel Grid.Column="0"
                Grid.ColumnSpan="1"
@@ -48,34 +48,34 @@
           <TextBlock Text="Camera X Position:" />
           <TextBox Name="cameraPositionXTextBox"
                    HorizontalAlignment="Left"
-                   MaxLength="5"
-                   Text="9" />
+                   Text="9"
+                   MaxLength="5" />
           <TextBlock Text="Camera Y Position:" />
           <TextBox Name="cameraPositionYTextBox"
                    HorizontalAlignment="Left"
-                   MaxLength="5"
-                   Text="8" />
+                   Text="8"
+                   MaxLength="5" />
           <TextBlock Text="Camera Z Position:" />
           <TextBox Name="cameraPositionZTextBox"
                    HorizontalAlignment="Left"
-                   MaxLength="5"
-                   Text="10" />
+                   Text="10"
+                   MaxLength="5" />
           <Separator />
           <TextBlock Text="Look Direction X:" />
           <TextBox Name="lookAtXTextBox"
                    HorizontalAlignment="Left"
-                   MaxLength="5"
-                   Text="-9" />
+                   Text="-9"
+                   MaxLength="5" />
           <TextBlock Text="Look Direction Y:" />
           <TextBox Name="lookAtYTextBox"
                    HorizontalAlignment="Left"
-                   MaxLength="5"
-                   Text="-8" />
+                   Text="-8"
+                   MaxLength="5" />
           <TextBlock Text="Look Direction Z:" />
           <TextBox Name="lookAtZTextBox"
                    HorizontalAlignment="Left"
-                   MaxLength="5"
-                   Text="-10" />
+                   Text="-10"
+                   MaxLength="5" />
           <Separator />
 
           <Button Name="simpleButton" Click="simpleButtonClick">Simple</Button>

@@ -11,7 +11,10 @@
         ATTACHED_LAYOUT = 50,
         CORE_LAYOUT = 60,
         ALIGNMENT_LAYOUT = 70,
-        OTHER = 1000,
+        PRIMARY_PROPERTIES = 1000,
+        PRIMARY_EVENTS = 1500,
+        OTHER = 2000,
+        CLOSING = 3000,
         BLEND_RELATED = 10000
         // ReSharper restore InconsistentNaming
     }

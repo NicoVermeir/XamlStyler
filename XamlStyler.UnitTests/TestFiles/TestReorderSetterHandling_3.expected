@@ -272,7 +272,7 @@
       <TextBlock Margin="8"
                  HorizontalAlignment="Left"
                  VerticalAlignment="Center">
-        <Hyperlink Command="{Binding DocumentClickCommand}" Style="{StaticResource HyperlinkStyle}">
+        <Hyperlink Style="{StaticResource HyperlinkStyle}" Command="{Binding DocumentClickCommand}">
           <TextBlock Text="{Binding Title}" />
         </Hyperlink>
       </TextBlock>

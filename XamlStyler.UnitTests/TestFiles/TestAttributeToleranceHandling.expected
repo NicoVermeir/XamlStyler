@@ -56,15 +56,15 @@
           <TextBlock Text="Camera Z Position:" />
           <TextBox Name="cameraPositionZTextBox"
                    HorizontalAlignment="Left"
-                   MaxLength="5"
-                   Text="10" />
+                   Text="10"
+                   MaxLength="5" />
           <Separator />
           <TextBlock Text="Look Direction X:" />
           <TextBox Name="lookAtXTextBox"
                    HorizontalAlignment="Left"
+                   Text="-9"
                    MaxLength="5"
-                   SomeAttr="42"
-                   Text="-9" />
+                   SomeAttr="42" />
           <Separator />
 
           <Button Name="simpleButton" Click="simpleButtonClick">Simple</Button>
