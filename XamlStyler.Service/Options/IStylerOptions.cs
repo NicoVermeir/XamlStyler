@@ -23,7 +23,7 @@ namespace XamlStyler.Core.Options
         [Category("Attribute Ordering Rule Groups")]
         [DisplayName("#10 Order attributes by name")]
         [Description("Enable sorting of attributes by name")]
-        [DefaultValue("True")]
+        [DefaultValue(true)]
         bool OrderAttributesByName { get; set; }
 
         [Category("Attribute Ordering Rule Groups")]
